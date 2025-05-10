@@ -64,10 +64,9 @@ background = transform.scale(image.load('i.webp'),(1000,1000))
 
 global player1
 player1 = player(500,900,'faicet_higets_lvl.webp',15,65,65)
-enemys = sprite.Group()
-global enemy1
-enemy1 = enemy(randint(100,200),randint(100,200),'angry.jpg',5,50,50)
-enemys.add(enemy1)
+
+
+
 global portal
 portal = Gamesprite(350,0,"portal.webp",0,300,200)
 kd = 100
@@ -109,22 +108,34 @@ while game:
     if win_num < 1 and enemys_update == True:
         enemy1.update()
         enemy1.reset()
+        enemy2.update()
+        enemy2.reset()
+        enemy3.update()
+        enemy3.reset()
 
     if lasers_update == True:
         if sprite.collide_rect(player1,wall1) or sprite.collide_rect(player1,wall2):
             game = False
-            
-    if sprite.collide_rect(player1,enemy1):
-        win_num += 1
-    kd += 1
+    if enemys_update == True:        
+        if sprite.collide_rect(player1,enemy1) or sprite.collide_rect(player1,enemy2) or sprite.collide_rect(player1,enemy3):
+            win_num += 1
+        kd += 1
     
     if sprite.collide_rect(player1,portal) and win_num == 3:
         player1.rect.x = 500
         player1.rect.y = 900
         enemys_update = True
         lasers_update = True
+
+        enemy1 = enemy(randint(100,200),randint(100,200),'angry.jpg',5,50,50)
+
+        enemy2 = enemy(randint(300,400),randint(100,200),'angry.jpg',5,50,50)
+
+        enemy3 = enemy(randint(600,700),randint(100,200),'angry.jpg',5,50,50)
         win_num = 0
 
+    if win_num == 3:
+        enemys_update = False
 
 
 
@@ -132,5 +143,4 @@ while game:
         if e.type == QUIT:
             game = False
 
-    display.update()    
-
+    display.update()  
