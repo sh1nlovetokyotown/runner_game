@@ -53,6 +53,9 @@ class enemy(Gamesprite):
         self.rect.x += (player1.rect.x - self.rect.x)/30
         self.rect.y += (player1.rect.y - self.rect.y)/30
 
+class bullet(Gamesprite):
+    
+
 
     
 
@@ -125,7 +128,7 @@ while game:
         player1.rect.x = 500
         player1.rect.y = 900
         enemys_update = True
-        lasers_update = True
+
 
         enemy1 = enemy(randint(100,200),randint(100,200),'angry.jpg',5,50,50)
 
@@ -143,4 +146,5 @@ while game:
         if e.type == QUIT:
             game = False
 
-    display.update()  
+    display.update()    
+
