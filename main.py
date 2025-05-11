@@ -2,6 +2,9 @@ from pygame import *
 clock = time.Clock()
 FPS = 60
 from random import randint
+mixer.init()
+move = True
+right_move = 1
 
 class Gamesprite(sprite.Sprite):
 
@@ -15,6 +18,7 @@ class Gamesprite(sprite.Sprite):
         self.cur_reload_time = 0
         self.reload_time = 0.15
         self.reloading = False
+        self.move = True
     def reset(self):
         window.blit(self.image,(self.rect.x,self.rect.y))
 
@@ -32,8 +36,10 @@ class player(Gamesprite):
         key_pressed = key.get_pressed()
     def fire(self):
         if mouse.get_pressed()[0] and self.reloading == False:
-            bullet_t = bullet(self.rect.centerx,self.rect.top,'black_cube.png',10,20,20)
+            bullet_t = bullet(self.rect.centerx,self.rect.top,'gray_cube.jpg',10,20,20)
             bullets.add(bullet_t)
+            mixer.music.load('fire.ogg')
+            mixer.music.play()
             self.reloading = True
         else:
             if self.cur_reload_time < self.reload_time:
@@ -78,9 +84,30 @@ class bullet(Gamesprite):
         self.fier_position = Vector2( mouse.get_pos()[0] - player_x, mouse.get_pos()[1] - player_y).normalize()
 
 
+
     def update(self):
-        self.rect.x += self.fier_position.x*10
-        self.rect.y += self.fier_position.y*10
+        if self.rect.x > 0 and self.rect.x < 1000 and self.rect.y > 0 and self.rect.y < 1000:
+            self.rect.x += self.fier_position.x*10
+            self.rect.y += self.fier_position.y*10
+        else:
+            self.kill()
+
+class boss(Gamesprite):
+    def __init__(self,player_x,player_y,player_image,player_speed,size_x,size_y):
+        super().__init__(player_x,player_y,player_image,player_speed,size_x,size_y)
+        self.hp = 100
+        self.move = True
+    def update(self):
+        if self.rect.x < 800 and move == True and right_move == 1:
+            self.rect.x += 5
+
+        if self.rect.x >= 800 and move == True:
+            right_move = 0
+            self.rect.x -= 5
+
+
+
+            
 
 bullets = sprite.Group()        
 global enemy1
@@ -97,26 +124,31 @@ enemys.add(enemy3)
 
 window = display.set_mode((1000,1000),flags = RESIZABLE)
 display.set_caption('догонялки')
-background = transform.scale(image.load('i.webp'),(1000,1000))
+background = transform.scale(image.load('game_fone.webp'),(1000,1000))
 
 global player1
-player1 = player(500,900,'faicet_higets_lvl.webp',15,65,65)
+player1 = player(500,900,'faicet_higets_lvl.webp',15,50,50)
+players = sprite.Group()
+players.add(player1)
 
 
 
 global portal
 portal = Gamesprite(350,0,"portal.webp",0,300,200)
+boss_spawn = 0
 kd = 100
 laser_num = 0
-win_num = 3
+win_num = 20
 remove = 1
 enemys_update = False
 game = True
 lasers_update = False
+boss_update = False
+
 while game:
     window.blit(background,(0,0))
     clock.tick(FPS)
-    if win_num == 3:
+    if win_num >= 20:
         portal.update()
         portal.reset()
     player1.update()
@@ -124,7 +156,7 @@ while game:
     bullets.draw(window)
     bullets.update()
     player1.fire()
-    if kd >= 100 and laser_num < 3 and lasers_update == True:
+    '''if kd >= 100 and laser_num < 3 and lasers_update == True:
         wall_num = randint(1,3)
         if wall_num == 1:
             wall1 = wall(0,-20,5,(700,20))
@@ -143,25 +175,26 @@ while game:
         wall1.update()
         wall1.reset()
         wall2.update()
-        wall2.reset()
+        wall2.reset()'''
 
-    if win_num < 1 and enemys_update == True:
-        enemy1.update()
-        enemy1.reset()
-        enemy2.update()
-        enemy2.reset()
-        enemy3.update()
-        enemy3.reset()
+    if enemys_update == True:
+        enemys.draw(window)
+        enemys.update()
+
 
     if lasers_update == True:
         if sprite.collide_rect(player1,wall1) or sprite.collide_rect(player1,wall2):
             game = False
     if enemys_update == True:        
-        if sprite.collide_rect(player1,enemy1,) or sprite.collide_rect(player1,enemy2,) or sprite.collide_rect(player1,enemy3):
+        if sprite.groupcollide(players,enemys,True,True):
             game = False
 
-    
-    if sprite.collide_rect(player1,portal) and win_num == 3:
+    if boss_update == True:
+        boss1.update()
+        boss1.reset()
+
+
+    if sprite.collide_rect(player1,portal) and win_num >= 20 and boss_spawn < 1:
         player1.rect.x = 500
         player1.rect.y = 900
         enemys_update = True
@@ -171,12 +204,25 @@ while game:
         enemy2.rect.y = 0
         enemy3.rect.x = randint(700,800)
         enemy3.rect.y = 0
-
-
-
+        win_num = 0
+        boss_spawn += 1
+    
+    if sprite.collide_rect(player1,portal) and win_num >= 20 and boss_spawn >= 1:
+        player1.rect.x = 500
+        player1.rect.y = 900
+        boss1 = boss(350,0,'boss1_imagen2.webp',5,300,200)
+        boss_update = True
         win_num = 0
 
-    if win_num == 3:
+
+    if sprite.groupcollide(enemys,bullets,True,True):        
+        vrag = enemy(randint(100,900),0,'angry.jpg',5,65,65)
+        enemys.add(vrag)
+        win_num += 1
+
+
+
+    if win_num == 20:
         enemys_update = False
 
 
