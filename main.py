@@ -4,7 +4,7 @@ FPS = 60
 from random import randint
 mixer.init()
 move = True
-right_move = 1
+
 
 class Gamesprite(sprite.Sprite):
 
@@ -27,9 +27,9 @@ class player(Gamesprite):
         key_pressed = key.get_pressed()
         if key_pressed[K_a] and player1.rect.x > 0:
             self.rect.x -= self.speed
-        if key_pressed[K_d] and player1.rect.x < 930:
+        if key_pressed[K_d] and player1.rect.x < 950:
             self.rect.x += self.speed
-        if key_pressed[K_s] and player1.rect.y < 930:
+        if key_pressed[K_s] and player1.rect.y < 950:
             self.rect.y += self.speed
         if key_pressed[K_w] and player1.rect.y > 0:
             self.rect.y -= self.speed 
@@ -97,13 +97,16 @@ class boss(Gamesprite):
         super().__init__(player_x,player_y,player_image,player_speed,size_x,size_y)
         self.hp = 100
         self.move = True
+        self.right_move = 1
     def update(self):
-        if self.rect.x < 800 and move == True and right_move == 1:
+        if self.rect.x < 715 and move == True and self.right_move == 1:
             self.rect.x += 5
-
-        if self.rect.x >= 800 and move == True:
-            right_move = 0
+        if self.rect.x >= 715 and self.right_move == 1:
+            self.right_move = 0
+        if self.rect.x > -15 and move == True and self.right_move == 0:
             self.rect.x -= 5
+        if self.rect.x <= -15 and self.right_move == 0:
+            self.right_move = 1
 
 
 
