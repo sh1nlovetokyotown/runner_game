@@ -92,6 +92,20 @@ class bullet(Gamesprite):
         else:
             self.kill()
 
+class boss_bullet(Gamesprite):
+    def __init__(self,player_x,player_y,player_image,player_speed,size_x,size_y):
+        super().__init__(player_x,player_y,player_image,player_speed,size_x,size_y)
+        self.fier_position = Vector2(player1.rect.x - player_x, player1.rect.y - player_y).normalize()
+
+
+
+    def update(self):
+        if self.rect.x > 0 and self.rect.x < 1000 and self.rect.y > 0 and self.rect.y < 1000:
+            self.rect.x += self.fier_position.x*10
+            self.rect.y += self.fier_position.y*10
+        else:
+            self.kill()
+
 class boss(Gamesprite):
     def __init__(self,player_x,player_y,player_image,player_speed,size_x,size_y):
         super().__init__(player_x,player_y,player_image,player_speed,size_x,size_y)
@@ -108,6 +122,20 @@ class boss(Gamesprite):
             self.rect.x -= 5
         if self.rect.x <= -15 and self.right_move == 0:
             self.right_move = 1
+        def fire(self):
+        if self.reloading == False:
+            bullet_b = boss_bullet(self.rect.centerx,self.rect.top,'black_cube.jpg',10,20,20)
+            boss_bullets.add(bullet_b)
+            mixer.music.load('fire.ogg')
+            mixer.music.play()
+            self.reloading = True
+        else:
+            if self.cur_reload_time < self.reload_time:
+                self.cur_reload_time += clock.get_time()/1000
+            else:
+                self.cur_reload_time = 0
+                self.reloading = False
+
 
 
 
@@ -239,5 +267,6 @@ while game:
             game = False
 
     display.update()    
+ 
 
 
