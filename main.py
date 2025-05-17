@@ -4,7 +4,7 @@ FPS = 60
 from random import randint
 mixer.init()
 move = True
-
+boss_spawn_lasers = 0
 
 class Gamesprite(sprite.Sprite):
 
@@ -98,6 +98,7 @@ class boss(Gamesprite):
         self.hp = 100
         self.move = True
         self.right_move = 1
+        self.fier_position = Vector2(player1.rect.x - player_x, player1.rect.y - player_y).normalize()
     def update(self):
         if self.rect.x < 715 and move == True and self.right_move == 1:
             self.rect.x += 5
@@ -107,6 +108,7 @@ class boss(Gamesprite):
             self.rect.x -= 5
         if self.rect.x <= -15 and self.right_move == 0:
             self.right_move = 1
+
 
 
 
@@ -128,27 +130,37 @@ enemys.add(enemy3)
 window = display.set_mode((1000,1000),flags = RESIZABLE)
 display.set_caption('догонялки')
 background = transform.scale(image.load('game_fone.webp'),(1000,1000))
-
+boss_update = False
 global player1
 player1 = player(500,900,'faicet_higets_lvl.webp',15,50,50)
 players = sprite.Group()
 players.add(player1)
+bosses = sprite.Group()
+
 
 
 
 global portal
 portal = Gamesprite(350,0,"portal.webp",0,300,200)
 boss_spawn = 0
-kd = 100
 laser_num = 0
 win_num = 20
 remove = 1
 enemys_update = False
 game = True
 lasers_update = False
-boss_update = False
+global wall1
+global wall2
+wall1 = wall(0,-20,5,(150,20))
+wall2 = wall(300,-20,5,(700,20))
+
 
 while game:
+    if boss_update == True:
+        bosses.add(boss1)
+        if boss1.hp == 80:
+            boss_spawn_lasers = 1
+            lasers_update = True
     window.blit(background,(0,0))
     clock.tick(FPS)
     if win_num >= 20:
@@ -159,26 +171,15 @@ while game:
     bullets.draw(window)
     bullets.update()
     player1.fire()
-    '''if kd >= 100 and laser_num < 3 and lasers_update == True:
-        wall_num = randint(1,3)
-        if wall_num == 1:
-            wall1 = wall(0,-20,5,(700,20))
-            wall2 = wall(850,-20,5,(150,20))
-        if wall_num == 2:
-            wall1 = wall(0,-20,5,(150,20))
-            wall2 = wall(300,-20,5,(700,20))
-        if wall_num == 3:
-            wall1 = wall(0,-20,5,(425,20))
-            wall2 = wall(575,-20,5,(425,20))
-        kd = 0
-        kd += 1
-        laser_num += 1
+    if boss_spawn_lasers == 1:
+        if lasers_update == True and wall1.rect.y < 1000 and wall2.rect.y < 1000:
+            wall1.update()
+            wall1.reset()
+            wall2.update()
+            wall2.reset()
+        else:
+            boss_spawn_lasers = 0
 
-    if lasers_update == True:
-        wall1.update()
-        wall1.reset()
-        wall2.update()
-        wall2.reset()'''
 
     if enemys_update == True:
         enemys.draw(window)
@@ -216,6 +217,9 @@ while game:
         boss1 = boss(350,0,'boss1_imagen2.webp',5,300,200)
         boss_update = True
         win_num = 0
+    if sprite.groupcollide(bosses,bullets,False,True):    
+        boss1.hp -= 1
+
 
 
     if sprite.groupcollide(enemys,bullets,True,True):        
