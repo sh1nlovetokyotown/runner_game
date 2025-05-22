@@ -100,7 +100,7 @@ class boss_bullet(Gamesprite):
 
 
     def update(self):
-        if self.rect.x > 0 and self.rect.x < 1000 and self.rect.y > 0 and self.rect.y < 1000:
+        if self.rect.x > -1 and self.rect.x < 1000 and self.rect.y > -1 and self.rect.y < 1000:
             self.rect.x += self.fier_position.x*10
             self.rect.y += self.fier_position.y*10
         else:
@@ -113,6 +113,7 @@ class boss(Gamesprite):
         self.move = True
         self.right_move = 1
         self.fier_position = Vector2(player1.rect.x - player_x, player1.rect.y - player_y).normalize()
+        self.reloading = False
     def update(self):
         if self.rect.x < 715 and move == True and self.right_move == 1:
             self.rect.x += 5
@@ -122,16 +123,16 @@ class boss(Gamesprite):
             self.rect.x -= 5
         if self.rect.x <= -15 and self.right_move == 0:
             self.right_move = 1
-        def fire(self):
+    def fire(self):
         if self.reloading == False:
-            bullet_b = boss_bullet(self.rect.centerx,self.rect.top,'black_cube.jpg',10,20,20)
+            bullet_b = boss_bullet(self.rect.centerx,self.rect.top,'black_cube.webp',10,20,20)
             boss_bullets.add(bullet_b)
             mixer.music.load('fire.ogg')
             mixer.music.play()
             self.reloading = True
         else:
             if self.cur_reload_time < self.reload_time:
-                self.cur_reload_time += clock.get_time()/1000
+                self.cur_reload_time += clock.get_time()/5000
             else:
                 self.cur_reload_time = 0
                 self.reloading = False
@@ -142,7 +143,8 @@ class boss(Gamesprite):
 
             
 
-bullets = sprite.Group()        
+bullets = sprite.Group()
+boss_bullets = sprite.Group()        
 global enemy1
 global enemy2
 global enemy3
@@ -224,6 +226,9 @@ while game:
     if boss_update == True:
         boss1.update()
         boss1.reset()
+        boss_bullets.draw(window)
+        boss_bullets.update()
+        boss1.fire()
 
 
     if sprite.collide_rect(player1,portal) and win_num >= 20 and boss_spawn < 1:
@@ -247,6 +252,8 @@ while game:
         win_num = 0
     if sprite.groupcollide(bosses,bullets,False,True):    
         boss1.hp -= 1
+        if boss1.hp <= 0:
+            boss_update = False
 
 
 
@@ -254,6 +261,9 @@ while game:
         vrag = enemy(randint(100,900),0,'angry.jpg',5,65,65)
         enemys.add(vrag)
         win_num += 1
+    
+    if sprite.groupcollide(players,boss_bullets,True,True):        
+        game = False
 
 
 
@@ -266,7 +276,6 @@ while game:
         if e.type == QUIT:
             game = False
 
-    display.update()    
- 
+    display.update()  
 
 
