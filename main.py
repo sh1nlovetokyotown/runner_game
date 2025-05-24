@@ -5,6 +5,9 @@ from random import randint
 mixer.init()
 move = True
 boss_spawn_lasers = 0
+global font
+font.init()
+font = font.SysFont('Arial',80)
 
 class Gamesprite(sprite.Sprite):
 
@@ -114,6 +117,8 @@ class boss(Gamesprite):
         self.right_move = 1
         self.fier_position = Vector2(player1.rect.x - player_x, player1.rect.y - player_y).normalize()
         self.reloading = False
+        self.boss_skill_reloading = True
+        self.reload_skill_time = 0
     def update(self):
         if self.rect.x < 715 and move == True and self.right_move == 1:
             self.rect.x += 5
@@ -181,19 +186,18 @@ game = True
 lasers_update = False
 global wall1
 global wall2
-wall1 = wall(0,-20,5,(150,20))
-wall2 = wall(300,-20,5,(700,20))
+wall1 = wall(0,-20,3,(150,20))
+wall2 = wall(300,-20,3,(700,20))
+
 
 
 while game:
     if boss_update == True:
         bosses.add(boss1)
-        if boss1.hp == 80:
-            boss_spawn_lasers = 1
-            lasers_update = True
+
     window.blit(background,(0,0))
     clock.tick(FPS)
-    if win_num >= 20:
+    if win_num >= 20 and boss_update == False:
         portal.update()
         portal.reset()
     player1.update()
@@ -202,7 +206,7 @@ while game:
     bullets.update()
     player1.fire()
     if boss_spawn_lasers == 1:
-        if lasers_update == True and wall1.rect.y < 1000 and wall2.rect.y < 1000:
+        if lasers_update == True and wall1.rect.y < 1100 and wall2.rect.y < 1100:
             wall1.update()
             wall1.reset()
             wall2.update()
@@ -217,7 +221,7 @@ while game:
 
 
     if lasers_update == True:
-        if sprite.collide_rect(player1,wall1) or sprite.collide_rect(player1,wall2):
+        if sprite.collide_rect(player1,wall1) and boss_spawn_lasers == 1 or sprite.collide_rect(player1,wall2) and boss_spawn_lasers == 1:
             game = False
     if enemys_update == True:        
         if sprite.groupcollide(players,enemys,True,True):
@@ -229,6 +233,29 @@ while game:
         boss_bullets.draw(window)
         boss_bullets.update()
         boss1.fire()
+        if sprite.collide_rect(boss1,player1) and boss_update == True:
+            game = False
+        if boss1.boss_skill_reloading == False:
+            skill = randint(1,2)
+            if skill == 1:
+                boss_spawn_lasers = 1
+                lasers_update = True
+                boss1.boss_skill_reloading = True
+            if skill == 2:
+                enemy1.rect.x = randint(100,200)
+                enemy1.rect.y = 0
+                enemy2.rect.x = randint(400,500)
+                enemy2.rect.y = 0
+                enemy3.rect.x = randint(700,800)
+                enemy3.rect.y = 0
+                win_num = 15
+                enemys_update = True
+                boss1.boss_skill_reloading = True
+        else:
+            boss1.reload_skill_time += 1
+        if boss1.reload_skill_time >= 300:
+            boss1.boss_skill_reloading = False
+            boss1.reload_skill_time = 0
 
 
     if sprite.collide_rect(player1,portal) and win_num >= 20 and boss_spawn < 1:
@@ -250,10 +277,19 @@ while game:
         boss1 = boss(350,0,'boss1_imagen2.webp',5,300,200)
         boss_update = True
         win_num = 0
-    if sprite.groupcollide(bosses,bullets,False,True):    
+    if sprite.groupcollide(bosses,bullets,False,True) and boss_update == True:    
         boss1.hp -= 1
         if boss1.hp <= 0:
             boss_update = False
+            win = font.render('YOU WIN',True,(250,250,0))
+            window.blit(win,(400,500))
+            timer = clock.tick(FPS)
+            display.update()
+            while timer < 2000:
+                timer += clock.tick(FPS)
+            game = False
+
+
 
 
 
@@ -262,7 +298,7 @@ while game:
         enemys.add(vrag)
         win_num += 1
     
-    if sprite.groupcollide(players,boss_bullets,True,True):        
+    if sprite.groupcollide(players,boss_bullets,True,True) and boss_update == True:        
         game = False
 
 
